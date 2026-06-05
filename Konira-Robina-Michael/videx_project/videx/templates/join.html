@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}Join Videx{% endblock %}
+
+{% block extra_css %}
+<style>
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #fff;
+  }
+
+  .join-card {
+    width: 420px;
+    padding: 40px 36px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+
+  .join-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    justify-content: center;
+  }
+
+  .join-logo svg { width: 38px; height: 38px; }
+  .join-logo-text { font-size: 1.8rem; font-weight: 900; color: var(--red); }
+
+  h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 22px; color: var(--black); }
+
+  .field { margin-bottom: 16px; }
+
+  .field input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.95rem;
+    color: var(--black);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .field input:focus { border-color: var(--red); }
+  .field input.error-input { border-color: var(--red); }
+
+  .error-msg {
+    color: var(--red);
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 4px;
+    display: block;
+  }
+
+  .non-field-errors {
+    color: var(--red);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    background: #fff0f0;
+    border-radius: 6px;
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 13px;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: background 0.18s;
+  }
+
+  .btn-submit:hover { background: #cc0000; }
+  .btn-submit:active { background: #ff0000; color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="join-card">
+  <div class="join-logo">
+    <svg viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="40" fill="#ff0000"/><polygon points="32,22 62,40 32,58" fill="white"/></svg>
+    <span class="join-logo-text">Videx</span>
+  </div>
+  <h2>Create your account</h2>
+
+  {% if form.non_field_errors %}
+    <div class="non-field-errors">{{ form.non_field_errors|join:", " }}</div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="field">
+      <input type="text" name="username" placeholder="Username"
+        value="{{ form.username.value|default:'' }}"
+        class="{% if form.username.errors %}error-input{% endif %}">
+      {% for e in form.username.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+    <div class="field">
+      <input type="email" name="email" placeholder="Email (optional)"
+        value="{{ form.email.value|default:'' }}">
+    </div>
+    <div class="field">
+      <input type="password" name="password" placeholder="Password"
+        class="{% if form.password.errors %}error-input{% endif %}">
+      {% for e in form.password.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+    <div class="field">
+      <input type="password" name="confirm_password" placeholder="Confirm Password"
+        class="{% if form.confirm_password.errors %}error-input{% endif %}">
+      {% for e in form.confirm_password.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+    <button type="submit" class="btn-submit">Join</button>
+  </form>
+</div>
+{% endblock %}
