@@ -24,7 +24,6 @@ from videx import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.landing, name='landing'),
-    path('join/', views.join, name='join'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('upload/', views.upload_video, name='upload_video'),
     path('watch/<int:pk>/', views.watch_video, name='watch_video'),
