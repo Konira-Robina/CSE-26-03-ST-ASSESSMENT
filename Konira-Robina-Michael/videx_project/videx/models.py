@@ -10,7 +10,6 @@ class Video(models.Model):
         ('1080p', '1080p'),
     ]
 
-    username = models.CharField(max_length=150)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     video_file = models.FileField(upload_to='videos/')
