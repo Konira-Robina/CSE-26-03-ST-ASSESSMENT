@@ -1,59 +1,69 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from .models import Video
+from .forms import VideoUploadForm
 
 # Create your views here.
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from .models import Video
-from .forms import JoinForm, VideoUploadForm
 
 
 def landing(request):
-    if request.user.is_authenticated:
+    if request.session.get('username'):
         return redirect('dashboard')
-    return render(request, 'landing.html')
+    return render(request, 'videos/landing.html')
 
 
 def join(request):
-    if request.user.is_authenticated:
+    if request.session.get('username'):
         return redirect('dashboard')
-    form = JoinForm()
+
+    error = None
     if request.method == 'POST':
-        form = JoinForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
+        username = request.POST.get('username', '').strip()
+        if not username:
+            error = 'Please enter a username.'
+        elif len(username) < 2:
+            error = 'Username must be at least 2 characters.'
+        else:
+            request.session['username'] = username
+            request.session.set_expiry(0)  # expires when browser closes
             return redirect('dashboard')
-    return render(request, 'join.html', {'form': form})
+
+    return render(request, 'videos/join.html', {'error': error})
 
 
-@login_required
 def dashboard(request):
-    videos = Video.objects.filter(user=request.user).order_by('-uploaded_at')
-    return render(request, 'dashboard.html', {'videos': videos})
+    if not request.session.get('username'):
+        return redirect('landing')
+    videos = Video.objects.filter(username=request.session['username']).order_by('-uploaded_at')
+    return render(request, 'videos/dashboard.html', {
+        'videos': videos,
+        'username': request.session['username']
+    })
 
 
-@login_required
 def upload_video(request):
+    if not request.session.get('username'):
+        return redirect('landing')
+
     if request.method == 'POST':
         form = VideoUploadForm(request.POST, request.FILES)
         if form.is_valid():
             video = form.save(commit=False)
-            video.user = request.user
+            video.username = request.session['username']
             video.save()
             return JsonResponse({'success': True, 'message': 'Video uploaded successfully!'})
         else:
             errors = {field: list(errs) for field, errs in form.errors.items()}
             return JsonResponse({'success': False, 'errors': errors}, status=400)
+
     form = VideoUploadForm()
-    return render(request, 'upload.html', {'form': form})
+    return render(request, 'videos/upload.html', {'form': form})
 
 
-@login_required
 def watch_video(request, pk):
-    video = get_object_or_404(Video, pk=pk, user=request.user)
+    if not request.session.get('username'):
+        return redirect('landing')
+    video = get_object_or_404(Video, pk=pk, username=request.session['username'])
     video.views += 1
     video.save(update_fields=['views'])
-    return render(request, 'watch.html', {'video': video})
+    return render(request, 'videos/watch.html', {'video': video})

@@ -1,10 +1,7 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
-from django.contrib.auth.models import User
 from django.utils import timezone
 
+# Create your models here.
 
 class Video(models.Model):
     QUALITY_CHOICES = [
@@ -13,7 +10,7 @@ class Video(models.Model):
         ('1080p', '1080p'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='videos')
+    username = models.CharField(max_length=150)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     video_file = models.FileField(upload_to='videos/')
